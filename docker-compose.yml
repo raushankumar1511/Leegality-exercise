@@ -1,0 +1,24 @@
+# Local PostgreSQL for development.
+# Only the database runs in Docker; Django runs locally from the virtualenv.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: network_routes_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      # Host 5433 -> container 5432 (5432 is often taken by a local Postgres install)
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
